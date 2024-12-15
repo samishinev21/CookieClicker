@@ -1,44 +1,54 @@
-import pgzrun
+import pygame
 import asyncio
 import os
 
-# Game settings
 TITLE = "Cookie Clicker"
-HEIGHT = 1296
-WIDTH = 2289
+HEIGHT = 720
+WIDTH = 1280
 
 os.environ['SDL_VIDEO_WINDOW_POS'] = 'center'
 
-# Center position constants
 CENTER_X = WIDTH / 2
 CENTER_Y = HEIGHT / 2
 
-# Global variables
 clicks = 0
 
-# Actor setup
-cookie = Actor("cookie")
-cookie.x = CENTER_X
-cookie.y = CENTER_Y
+cookie_image = pygame.image.load("images/cookie.png")
+cookie = pygame.Rect(CENTER_X - cookie_image.get_width() // 2,
+                     CENTER_Y - cookie_image.get_height() // 2,
+                     cookie_image.get_width(),
+                     cookie_image.get_height())
 
-# Pygame Zero draw function
+screen = pygame.display.set_mode((WIDTH, HEIGHT))
+pygame.display.set_caption(TITLE)
+
+font = pygame.font.Font(None, 100)
+
+
 def draw():
-    screen.clear()
     screen.fill("cyan")
-    cookie.draw()
-    screen.draw.text(str(clicks), [CENTER_X, CENTER_Y - 350], color="black", fontsize=100)
+    screen.blit(cookie_image, (cookie.x, cookie.y))
+    text = font.render(str(clicks), True, "black")
+    screen.blit(text, (CENTER_X - text.get_width() // 2, CENTER_Y - 350))
 
 
-# Pygame Zero mouse click detection
-def on_mouse_down(pos):
+async def main():
     global clicks
-    if cookie.collidepoint(pos):
-        cookie.image = "cookie"  # Reset image after click
-        clicks += 1
+
+    running = True
+    while running:
+        for event in pygame.event.get():
+            if event.type == pygame.QUIT:
+                running = False
+            elif event.type == pygame.MOUSEBUTTONDOWN:
+                if cookie.collidepoint(event.pos):
+                    clicks += 1
+
+        draw()
+        pygame.display.flip()
+
+        await asyncio.sleep(0)
 
 
-# Pygame Zero mouse release detection
-def on_mouse_up(pos):
-    cookie.image = "cookie"
-
-pgzrun.go()
+if __name__ == "__main__":
+    asyncio.run(main())
